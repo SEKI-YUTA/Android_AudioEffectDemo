@@ -2,6 +2,7 @@ package com.reverse.audioeffectdemo.viewmodel
 
 import android.content.Context
 import android.media.audiofx.Equalizer
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
@@ -33,16 +34,19 @@ class MainActivityViewModel: ViewModel() {
     }
 
     fun setAudio(packageName: String) {
+        println("set audio")
         val uriStr = "android.resource://" + packageName + "/" + R.raw.demo
         exoPlayer?.setMediaItem(MediaItem.fromUri(uriStr))
     }
 
     fun playAudio() {
+        println("play audio")
         exoPlayer?.prepare()
         exoPlayer?.play()
     }
 
     fun pauseAudio() {
+        println("pause audio")
         exoPlayer?.pause()
     }
 

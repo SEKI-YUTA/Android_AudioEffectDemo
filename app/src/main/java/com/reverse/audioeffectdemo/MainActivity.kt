@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.setUP(this)
         viewModel.createEqualizer()
+        viewModel.setAudio(packageName)
+
         val nameList = viewModel.getEqualizerPreset()
         println("nameList size ${nameList.size}")
 //        binding.spinPreset.apply {
@@ -39,8 +41,9 @@ class MainActivity : AppCompatActivity() {
             val count = it!!.numberOfBands
             for(i in 0 until count) {
                 val center = eq!!.getCenterFreq(i.toShort())
-                Log.d("center Freq", center.toString())
-                binding.seekbarBox.addView(createSeekBar(center / 1000))
+                val bandRange = eq!!.bandLevelRange
+                Log.d("band range", "bottom: ${bandRange[0]} top: ${bandRange[1]}")
+                binding.seekbarBox.addView(createSeekBar(center / 1000, i ,bandRange))
             }
         }
     }
@@ -57,7 +60,6 @@ class MainActivity : AppCompatActivity() {
 
         }
         binding.btnStart.setOnClickListener {
-            viewModel.setAudio(packageName)
             viewModel.playAudio()
         }
 
@@ -66,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun createSeekBar(freq: Int): View {
+    fun createSeekBar(freq: Int,idx: Int, levelRange: ShortArray): View {
         val linearLayout = LinearLayout(this).apply {
             val layoutParam = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             layoutParams = layoutParam
@@ -76,6 +78,9 @@ class MainActivity : AppCompatActivity() {
 //            min = 0
             val layoutParam = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             layoutParams = layoutParam
+            min = levelRange[0].toInt()
+            max = levelRange[1].toInt()
+            progress = 0
         }
         val label = TextView(this).apply {
             text = freq.toString()
@@ -85,6 +90,24 @@ class MainActivity : AppCompatActivity() {
             val layoutParam =  ViewGroup.LayoutParams(width, ViewGroup.LayoutParams.WRAP_CONTENT)
 //            layoutParams = layoutParam
         }
+
+        // シークバーでイコライザーを調整する
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, level: Int, p2: Boolean) {
+                viewModel.equalizer?.let {
+                    it.setBandLevel(idx.toShort(), level.toShort())
+                }
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+                println("onStartTrackingTouch")
+            }
+
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+                println("onStopTrackingTouch")
+            }
+
+        })
         linearLayout.apply {
             addView(label)
             addView(seekBar)
